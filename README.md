@@ -21,9 +21,8 @@ fBServer.start().then(function (serverData) {
 ##== Ensure file is available ==##
 # Request
 GET => /api/ensure-file-is-available?
-    name=myfile &
     url=http://example.com/url/to/my/file &
-    timeout=300 # Timeout in seconds
+    timeout=300 # Timeout in seconds (optional)
 # Response
 { available: false } # If not available
 { available: true, url: 'http://myhost/files/myfile' } # If available

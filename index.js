@@ -2,6 +2,7 @@ var q = require('q');
 var path = require('path');
 var express = require('express');
 var base64 = require('base-64');
+var requestIp = require('request-ip');
 var fs = require('fs');
 var download = require('download');
 var downloadFile = require('download-file')
@@ -14,10 +15,12 @@ module.exports = function FilesBucketServer (workspacePath) {
     var self = this;
     this.workspacePath = workspacePath;
     this.server = new core.classes.Server();
+    this.onlyLocalRequestsAllowed = false;
 
     // Methods
     var constructor = function () {
         fse.ensureDirSync(self.workspacePath);
+        setupSecurityMiddleware();
         self.setupServerAPI();
         self.setupServerFilesStatics();
         self.startGarbageCollector();
@@ -35,8 +38,33 @@ module.exports = function FilesBucketServer (workspacePath) {
         }
         return e;
     }
+    var setupSecurityMiddleware = function () {
+        self.server.app.use(requestIp.mw());
+        self.server.app.all('*', function (req, res, next) {
+            if (!self.onlyLocalRequestsAllowed) {
+                next();
+                return;
+            }
+            if (
+                req.clientIp != 'localhost' &&
+                req.clientIp != '127.0.0.1' &&
+                req.clientIp != '::1' &&
+                req.clientIp != '::ffff:127.0.0.1' &&
+                req.clientIp != self.server.ip
+            ) {
+                res.status(401);
+                res.send('Outside requests are not allowed');
+                res.end();
+                return;
+            }
+            next();
+        });
+    }
     this.setupServerFilesStatics = function () {
         self.server.app.use('/files', express.static(self.workspacePath));
+    }
+    this.onlyAllowLocalRequests = function () {
+        this.onlyLocalRequestsAllowed = true;
     }
     this.startGarbageCollector = function () {
         setInterval(function () {
