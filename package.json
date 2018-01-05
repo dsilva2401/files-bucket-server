@@ -18,6 +18,7 @@
   "homepage": "https://github.com/dsilva2401/files-bucket-server#readme",
   "dependencies": {
     "express": "^4.16.2",
+    "fs-extra": "^5.0.0",
     "openport": "0.0.4",
     "q": "^1.5.1"
   }
