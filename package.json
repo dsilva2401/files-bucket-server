@@ -1,0 +1,24 @@
+{
+  "name": "files-bucket-server",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dsilva2401/files-bucket-server.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/dsilva2401/files-bucket-server/issues"
+  },
+  "homepage": "https://github.com/dsilva2401/files-bucket-server#readme",
+  "dependencies": {
+    "express": "^4.16.2",
+    "openport": "0.0.4",
+    "q": "^1.5.1"
+  }
+}
