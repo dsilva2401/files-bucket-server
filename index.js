@@ -19,6 +19,7 @@ module.exports = function FilesBucketServer (workspacePath) {
         fse.ensureDirSync(self.workspacePath);
         self.setupServerAPI();
         self.setupServerFilesStatics();
+        self.startGarbageCollector();
     }
     var parseEntry = function (rawEntryName) {
         var e = {
@@ -33,11 +34,46 @@ module.exports = function FilesBucketServer (workspacePath) {
     this.setupServerFilesStatics = function () {
         self.server.app.use('/files', express.static(self.workspacePath));
     }
+    this.startGarbageCollector = function () {
+        setInterval(function () {
+            try {
+                var entriesToWatch = fs.readdirSync(
+                    self.workspacePath
+                ).filter(function (e) {
+                    return !!e.split('_')[1];
+                });
+                // Remove invalid
+                entriesToWatch.forEach(function (e) {
+                    var entryPath = path.join(self.workspacePath, e);
+                    if (e.split('_').length != 3) {
+                        fse.remove(entryPath);
+                        return;
+                    }
+                });
+                entriesToWatch = entriesToWatch.filter(function (e) {
+                    if (e.split('_').length != 3) {
+                        return false;
+                    }
+                    return true;
+                });
+                // Remove expired
+                entriesToWatch.forEach(function (e) {
+                    var entryPath = path.join(self.workspacePath, e);
+                    var timestamp = parseInt(e.split('_')[1]);
+                    var timeoutInSeconds = parseInt(e.split('_')[2]);
+                    if ((Date.now() - timestamp)/1000 > timeoutInSeconds) {
+                        fse.remove(entryPath);
+                    }
+                });
+            } catch (err) {}
+        }, 6000);
+    }
     this.setupServerAPI = function () {
 
         // Ensure file is available
         self.server.app.get('/api/ensure-file-is-available', function (req, res) {
             // Validation
+            req.query.name = req.query.name.replace('_', '-');
             var requiredQueryParams = {
                 name: /[a-zA-Z0-9]+/,
                 // url: /.*/,
