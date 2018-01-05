@@ -35,6 +35,7 @@ GET => /api/files
 # Response
 { downloaded: [{..}], pending: [{..}] }
 
+
 ##== Delete file ==##
 # Request
 DELETE => /api/files/:filename
