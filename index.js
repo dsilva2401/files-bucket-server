@@ -1,7 +1,9 @@
 var q = require('q');
 var path = require('path');
+var express = require('express');
 var fs = require('fs');
 var download = require('download');
+var downloadFile = require('download-file')
 var fse = require('fs-extra');
 var core = require('./core')();
 
@@ -16,6 +18,7 @@ module.exports = function FilesBucketServer (workspacePath) {
     var constructor = function () {
         fse.ensureDirSync(self.workspacePath);
         self.setupServerAPI();
+        self.setupServerFilesStatics();
     }
     var parseEntry = function (rawEntryName) {
         var e = {
@@ -26,6 +29,9 @@ module.exports = function FilesBucketServer (workspacePath) {
             e.url = self.server.url+'/files/'+rawEntryName
         }
         return e;
+    }
+    this.setupServerFilesStatics = function () {
+        self.server.app.use('/files', express.static(self.workspacePath));
     }
     this.setupServerAPI = function () {
 
@@ -67,11 +73,31 @@ module.exports = function FilesBucketServer (workspacePath) {
 
                 // Not found
                 var timeout = parseInt(req.query.timeout || '0') || 60;
-                download(req.query.url).then(function (data) {
+                /*download(req.query.url).then(function (data) {
                     fs.writeFileSync(
                         path.join(self.workspacePath, req.query.name), data
                     );
-                });
+                });*/
+                var fname = req.query.name+'_'+Date.now()+'_'+timeout;
+                downloadFile(req.query.url, {
+                    filename: fname,
+                    directory: self.workspacePath
+                }, function (err) {
+                    if (err) {
+                        try {
+                            fse.removeSync(
+                                path.join(self.workspacePath, fname)
+                            )
+                        } catch (err) {}
+                        return;
+                    }
+                    try {
+                        fse.renameSync(
+                            path.join(self.workspacePath, fname),
+                            path.join(self.workspacePath, req.query.name)
+                        );
+                    } catch (err) {}
+                })
                 res.status(200);
                 res.json({
                     name: req.query.name,
