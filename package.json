@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/dsilva2401/files-bucket-server#readme",
   "dependencies": {
+    "base-64": "^0.1.0",
     "download": "^6.2.5",
     "download-file": "^0.1.5",
     "express": "^4.16.2",

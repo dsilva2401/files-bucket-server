@@ -1,6 +1,7 @@
 var q = require('q');
 var path = require('path');
 var express = require('express');
+var base64 = require('base-64');
 var fs = require('fs');
 var download = require('download');
 var downloadFile = require('download-file')
@@ -26,6 +27,9 @@ module.exports = function FilesBucketServer (workspacePath) {
             name: rawEntryName.split('_')[0],
             available: !!!rawEntryName.split('_')[1],
         }
+        try {
+            e.source = base64.decode(e.name);
+        } catch (err) {}
         if (e.available) {
             e.url = self.server.url+'/files/'+rawEntryName
         }
@@ -73,11 +77,11 @@ module.exports = function FilesBucketServer (workspacePath) {
         // Ensure file is available
         self.server.app.get('/api/ensure-file-is-available', function (req, res) {
             // Validation
-            req.query.name = req.query.name.replace('_', '-');
             var requiredQueryParams = {
-                name: /[a-zA-Z0-9]+/,
+                // name: /[a-zA-Z0-9]+/,
                 // url: /.*/,
             }
+            req.query.name = base64.encode(req.query.url);
             for (var k in requiredQueryParams) {
                 if (
                     !req.query[k] ||
