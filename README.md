@@ -33,7 +33,7 @@ GET => /api/ensure-file-is-available?
 # Request
 GET => /api/files
 # Response
-{ downloaded: [{..}], pending: [{..}] }
+[{..]]
 
 
 ##== Delete file ==##
