@@ -11,7 +11,11 @@ module.exports = function (settings, core, shared) {
     }
     
     FilesNamesParser.decode = function (rawName) {
-        return {}
+        return {
+            name: rawName.split('_')[0],
+            available: !!rawName.split('_')[1],
+            url: 
+        }
     }
 
     return FilesNamesParser;

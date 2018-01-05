@@ -1,6 +1,7 @@
 var q = require('q');
 var path = require('path');
 var fs = require('fs');
+var download = require('download');
 var fse = require('fs-extra');
 var core = require('./core')();
 
@@ -8,7 +9,7 @@ module.exports = function FilesBucketServer (workspacePath) {
 
     // Attributes
     var self = this;
-    this.workspacePath = path.join(workspacePath, 'fbs-workspace');
+    this.workspacePath = workspacePath;
     this.server = new core.classes.Server();
 
     // Methods
@@ -16,11 +17,73 @@ module.exports = function FilesBucketServer (workspacePath) {
         fse.ensureDirSync(self.workspacePath);
         self.setupServerAPI();
     }
+    var parseEntry = function (rawEntryName) {
+        var e = {
+            name: rawEntryName.split('_')[0],
+            available: !!!rawEntryName.split('_')[1],
+        }
+        if (e.available) {
+            e.url = self.server.url+'/files/'+rawEntryName
+        }
+        return e;
+    }
     this.setupServerAPI = function () {
 
         // Ensure file is available
         self.server.app.get('/api/ensure-file-is-available', function (req, res) {
-            
+            // Validation
+            var requiredQueryParams = {
+                name: /[a-zA-Z0-9]+/,
+                // url: /.*/,
+            }
+            for (var k in requiredQueryParams) {
+                if (
+                    !req.query[k] ||
+                    !req.query[k].match(requiredQueryParams[k])
+                ) {
+                    res.status(404);
+                    res.send('Invalid params, missing query param: '+k);
+                    res.end();
+                    return;
+                }
+            }
+            // Verify if downloaded
+            try {
+                var entries = fs.readdirSync(self.workspacePath);
+                var parsedEntries = entries.map(function (entry) {
+                    return parseEntry(entry);
+                });
+                
+                // Found
+                var item = parsedEntries.filter(function (e) {
+                    return e.name == req.query.name;
+                })[0];
+                if (item) {
+                    res.status(200);
+                    res.json(item);
+                    res.end();
+                    return;
+                }
+
+                // Not found
+                var timeout = parseInt(req.query.timeout || '0') || 60;
+                download(req.query.url).then(function (data) {
+                    fs.writeFileSync(
+                        path.join(self.workspacePath, req.query.name), data
+                    );
+                });
+                res.status(200);
+                res.json({
+                    name: req.query.name,
+                    available: false
+                });
+                res.end();
+
+            } catch (err) {
+                res.status(500);
+                res.send(err);
+                res.end();
+            }
         });
         
         // List files
@@ -29,7 +92,7 @@ module.exports = function FilesBucketServer (workspacePath) {
                 var entries = fs.readdirSync(self.workspacePath);
                 res.status(200);
                 res.json(entries.map(function (entry) {
-                    core.classes.FilesNamesParser.decode(entry);
+                    return parseEntry(entry);
                 }));
                 res.end();
             } catch (err) {

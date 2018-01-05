@@ -1,6 +1,7 @@
 var q = require('q');
 var express = require('express');
 var openport = require('openport');
+var ip = require('ip');
 
 
 module.exports = function (settings, core, shared) {
@@ -9,6 +10,9 @@ module.exports = function (settings, core, shared) {
         // Attributes
         var self = this;
         this.app = express();
+        this.port = null;
+        this.url = null;
+        this.ip = ip.address();
 
         // Methods
         var constructor = function () {
@@ -20,6 +24,8 @@ module.exports = function (settings, core, shared) {
             var startServer = function (_port) {
                 try {
                     self.app.listen(_port, function () {
+                        self.port = _port;
+                        self.url = 'http://'+self.ip+':'+_port;
                         deferred.resolve({
                             port: _port
                         });
