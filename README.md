@@ -8,8 +8,12 @@ npm install files-bucket-server --save
 ## Bucket Usage
 ```js
 var FileBucketServer = require('files-bucket-server');
-var fBServer = new FileBucketServer('./path/to/files');
+var fBServer = new FileBucketServer('./path/to/files', { logsEnabled: true });
 
+// Only allow local requests
+fBServer.onlyAllowLocalRequests();
+
+// Start server
 fBServer.start().then(function (serverData) {
     console.log('Server is up at port: '+serverData.port);
 });

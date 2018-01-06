@@ -1,6 +1,7 @@
 var q = require('q');
 var path = require('path');
 var express = require('express');
+var morgan = require('morgan');
 var base64 = require('base-64');
 var requestIp = require('request-ip');
 var fs = require('fs');
@@ -9,7 +10,7 @@ var downloadFile = require('download-file')
 var fse = require('fs-extra');
 var core = require('./core')();
 
-module.exports = function FilesBucketServer (workspacePath) {
+module.exports = function FilesBucketServer (workspacePath, options) {
 
     // Attributes
     var self = this;
@@ -40,6 +41,9 @@ module.exports = function FilesBucketServer (workspacePath) {
     }
     var setupSecurityMiddleware = function () {
         self.server.app.use(requestIp.mw());
+        if (options && options.logsEnabled) {
+            self.server.app.use(morgan('dev'));
+        }
         self.server.app.all('*', function (req, res, next) {
             if (!self.onlyLocalRequestsAllowed) {
                 next();
