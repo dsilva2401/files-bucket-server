@@ -222,8 +222,8 @@ module.exports = function FilesBucketServer (workspacePath, options) {
         });
 
     }
-    this.start = function (number) {
-        return this.server.start(number);
+    this.start = function (port) {
+        return this.server.start(port);
     }
 
     // Construct

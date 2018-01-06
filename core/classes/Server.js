@@ -45,6 +45,19 @@ module.exports = function (settings, core, shared) {
                 });
                 return deferred.promise;
             }
+            if (typeof port == 'object') {
+                openport.find({
+                    startingPort: port.startingPort,
+                    endingPort: port.endingPort
+                }, function(err, port) {
+                    if (err) {
+                        deferred.reject(err);
+                        return;
+                    }
+                    startServer(port);
+                });
+                return deferred.promise;
+            }
             startServer(port);
             return deferred.promise;
         }
