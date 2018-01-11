@@ -40,6 +40,11 @@ module.exports = function FilesBucketServer (workspacePath, options) {
         return e;
     }
     var setupSecurityMiddleware = function () {
+        self.server.app.use(function(req, res, next) {
+            res.header("Access-Control-Allow-Origin", "*");
+            res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+            next();
+        });
         self.server.app.use(requestIp.mw());
         if (options && options.logsEnabled) {
             self.server.app.use(morgan('dev'));
