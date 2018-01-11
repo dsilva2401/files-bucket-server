@@ -106,6 +106,13 @@ module.exports = function FilesBucketServer (workspacePath, options) {
     }
     this.setupServerAPI = function () {
 
+        // Test service
+        self.server.app.get('/test', function (req, res) {
+            res.status(200);
+            res.send('Ok');
+            res.end();
+        })
+
         // Ensure file is available
         self.server.app.get('/api/ensure-file-is-available', function (req, res) {
             // Validation
