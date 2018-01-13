@@ -35,7 +35,11 @@ module.exports = function FilesBucketServer (workspacePath, options) {
             e.source = base64.decode(e.name);
         } catch (err) {}
         if (e.available) {
-            e.url = self.server.url+'/files/'+rawEntryName
+            if (self.onlyLocalRequestsAllowed) {
+                e.url = 'http://localhost:'+self.server.port+'/files/'+rawEntryName
+            } else {
+                e.url = self.server.url+'/files/'+rawEntryName
+            }
         }
         return e;
     }
