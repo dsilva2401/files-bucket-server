@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "postinstall": "node_modules/.bin/webpack --progress"
   },
   "repository": {
     "type": "git",
@@ -17,6 +18,8 @@
   },
   "homepage": "https://github.com/dsilva2401/files-bucket-server#readme",
   "dependencies": {
+    "babel-loader": "^7.1.2",
+    "babel-preset-es2015": "^6.24.1",
     "base-64": "^0.1.0",
     "download": "^6.2.5",
     "download-file": "^0.1.5",
@@ -26,6 +29,10 @@
     "morgan": "^1.9.0",
     "openport": "0.0.4",
     "q": "^1.5.1",
-    "request-ip": "git://github.com/fabalcu97/request-ip.git"
+    "request-ip": "^2.0.2",
+    "webpack": "^3.10.0"
+  },
+  "devDependencies": {
+    "babel-core": "^6.26.0"
   }
 }
